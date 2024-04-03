@@ -8,6 +8,70 @@
 
 ### Решение Задание 1
 
+Устанавливаем HAProxy
+```
+yum install haproxy && systemctl enable --now haproxy && systemctl status haproxy
+```
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/b52a7428-84cd-4229-840b-fa90347eac9b)
+
+Запускаем http python сервер для порта 8888
+
+```
+vim http_index_8888.py
+```
+
+```
+import http.server
+import socketserver
+
+PORT = 8888
+SERVER_NAME = "Сервер 8888"
+
+Handler = http.server.SimpleHTTPRequestHandler
+Handler.extensions_map['.html'] = 'text/html'
+
+class MyHandler(Handler):
+    def log_message(self, format, *args):
+        print(f"[{SERVER_NAME}] {format % args}")
+
+    def do_GET(self):
+        if self.path == '/':
+            self.path = '/index.html'
+        return Handler.do_GET(self)
+
+with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
+    print(f"{SERVER_NAME} запущен на порту {PORT}")
+    httpd.serve_forever()
+```
+Запускаем http python сервер для порта 9999  
+```
+vim http_index_9999.py
+```
+```
+import http.server
+import socketserver
+
+PORT = 9999
+SERVER_NAME = "Сервер 9999"
+
+Handler = http.server.SimpleHTTPRequestHandler
+Handler.extensions_map['.html'] = 'text/html'
+
+class MyHandler(Handler):
+    def log_message(self, format, *args):
+        print(f"[{SERVER_NAME}] {format % args}")
+
+    def do_GET(self):
+        if self.path == '/':
+            self.path = '/index1.html'
+        return Handler.do_GET(self)
+
+with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
+    print(f"{SERVER_NAME} запущен на порту {PORT}")
+    httpd.serve_forever()
+```
+
+
 ---
 ### Задание 2
 - Запустите три simple python сервера на своей виртуальной машине на разных портах
