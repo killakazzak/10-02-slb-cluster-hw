@@ -43,6 +43,10 @@ with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
     print(f"{SERVER_NAME} запущен на порту {PORT}")
     httpd.serve_forever()
 ```
+```
+python3 http_index_8888.py &
+```
+
 Запускаем http python сервер для порта 9999  
 ```
 vim http_index_9999.py
@@ -70,6 +74,99 @@ with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
     print(f"{SERVER_NAME} запущен на порту {PORT}")
     httpd.serve_forever()
 ```
+```
+python3 http_index_9999.py &
+```
+Проверка
+```
+netstat -tulpn | grep -E '8888|9999'
+```
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/bfe7774b-b58e-49aa-ad57-9d781216e327)
+
+Настраиваем HAProxy
+```
+vim /etc/haproxy/haproxy.cfg
+```
+```
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+    # utilize system-wide crypto-policies
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+listen stats # веб-страница со статистикой
+bind :888
+mode http
+stats enable
+stats uri /stats
+stats refresh 5s
+stats realm Haproxy\ Statistics
+
+frontend frontend # секция фронтенд
+mode http
+bind :8088
+default_backend backend
+
+backend backend # секция бэкенд
+mode http
+balance roundrobin
+server s1 127.0.0.1:8888 check
+server s2 127.0.0.1:9999 check
+```
+
+
+Проверка
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/06d734b2-09fd-483f-a469-a085daf71416)
+
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/bb854518-6bc4-4f4e-b377-acc1b2c01dce)
+
+
 
 
 ---
