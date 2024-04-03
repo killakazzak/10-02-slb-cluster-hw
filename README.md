@@ -20,7 +20,7 @@ yum install haproxy && systemctl enable --now haproxy && systemctl status haprox
 vim http_index_8888.py
 ```
 
-```
+```python
 import http.server
 import socketserver
 
@@ -47,7 +47,7 @@ with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
 ```
 vim http_index_9999.py
 ```
-```
+```python
 import http.server
 import socketserver
 
