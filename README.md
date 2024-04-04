@@ -285,6 +285,10 @@ curl http://10.159.86.98:8088/
 yum install nginx && systemctl enable --now nginx && systemctl status nginx
 ```
 Настраиваем NGinx
+```
+vim /etc/nginx/conf.d/http_server.conf
+```
+
 ```nginx
 server {
        listen 80;
@@ -302,6 +306,16 @@ server {
            proxy_pass http://example.local:8088;
        }
    }
+```
+Перезапусаем NGinx
+
+```bash
+nginx -s reload
+```
+Загружаем картинки в /var/www/
+
+```bash
+cp *.jpg /var/www/
 ```
 
 
