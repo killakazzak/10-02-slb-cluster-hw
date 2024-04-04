@@ -279,6 +279,33 @@ curl http://10.159.86.98:8088/
 
 ### Решение Задание 3*
 
+Устанавливаем NGinx
+
+```
+yum install nginx && systemctl enable --now nginx && systemctl status nginx
+```
+Настраиваем NGinx
+```nginx
+server {
+       listen 80;
+       server_name example.local;
+
+       location / {
+           try_files $uri @proxy;
+       }
+
+       location ~ \.jpg$ {
+           root /var/www/;
+       }
+
+       location @proxy {
+           proxy_pass http://example.local:8088;
+       }
+   }
+```
+
+
+
 ---
 
 ### Задание 4*
