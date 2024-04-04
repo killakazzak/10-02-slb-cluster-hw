@@ -318,6 +318,15 @@ nginx -s reload
 cp *.jpg /var/www/
 ```
 
+Проверяем работу NGinx сервера
+
+Запрос без jpg
+
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/58d49f86-d203-4f5a-bf73-feee9847d276)
+
+Запрос с jpg
+
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/f3b105e8-0e7d-4de3-9c34-5c45b4873b3f)
 
 
 ---
