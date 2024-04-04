@@ -263,6 +263,7 @@ curl http://10.159.86.98:8088/
 ![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/d3b444d1-4738-4ece-aee7-6c269b7c5e03)
 
 
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/35443175-9f44-4172-8162-101f79a514c6)
 
 ---
 
