@@ -341,6 +341,92 @@ cp *.jpg /var/www/
 
 ### Решение Задание 4*
 
+Конфигурируем HAProxy
+```bash
+vim /etc/haproxy/haproxy.cfg
+```
+
+```haproxy
+global
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    stats socket /var/lib/haproxy/stats
+
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+listen stats # веб-страница со статистикой
+    bind :888
+    mode http
+    stats enable
+    stats uri /stats
+    stats refresh 5s
+    stats realm Haproxy\ Statistics
+
+frontend frontend # секция фронтенд
+    mode http
+    bind :8088
+    acl host_example1_local hdr(host) -i example1.local:8088
+    use_backend backend1 if host_example1_local
+    acl host_example2_local hdr(host) -i example2.local:8088
+    use_backend backend2 if host_example2_local
+    default_backend blocked_backend
+
+backend backend1 # секция бэкенд
+    mode http
+    balance roundrobin
+    server s1 127.0.0.1:6666 check
+    server s2 127.0.0.1:7777 check
+
+backend backend2 # секция бэкенд
+    mode http
+    balance roundrobin
+    server s2 127.0.0.1:8888 check
+    server s3 127.0.0.1:9999 check
+
+
+backend blocked_backend
+    mode http
+    http-request deny deny_status 403
+```
+
+
+
+Проверка example1.local
+
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/d6595ca2-f6eb-49f5-98f9-66e1319ea113)
+
+Проверка example2.local
+
+
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/06d55216-727d-41cb-8eb1-c849911bcd6d)
+
+
 
 ------
 
