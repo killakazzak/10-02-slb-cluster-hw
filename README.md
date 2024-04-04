@@ -178,6 +178,92 @@ server s2 127.0.0.1:9999 check
 
 ### Решение Задание 2
 
+Настройка HAProxy
+
+```
+vim /etc/haproxy/haproxy.cfg
+```
+
+```bash
+global
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    stats socket /var/lib/haproxy/stats
+
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+listen stats # веб-страница со статистикой
+    bind :888
+    mode http
+    stats enable
+    stats uri /stats
+    stats refresh 5s
+    stats realm Haproxy\ Statistics
+
+frontend frontend # секция фронтенд
+    mode http
+    bind :8088
+    acl host_example_local hdr(host) -i example.local:8088
+    use_backend backend if host_example_local
+    default_backend blocked_backend
+
+
+backend backend # секция бэкенд
+    mode http
+    balance roundrobin
+    server s1 127.0.0.1:7777 weight 2 check
+    server s2 127.0.0.1:8888 weight 3 check
+    server s3 127.0.0.1:9999 weight 4 check
+
+backend blocked_backend
+    mode http
+    http-request deny deny_status 403
+```
+Проверка HTTP сервера
+```
+netstat -tulpn | grep -E '7777|8888|9999'
+```
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/6294865f-ac66-4b5e-8321-ac8f640095ac)
+
+Провера ACL
+```
+curl http://example.local:8088/
+```
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/16007f26-d19b-493a-88f9-fd0dc7575516)
+
+```
+curl http://10.159.86.98:8088/
+```
+![image](https://github.com/killakazzak/10-02-slb-cluster-hw/assets/32342205/d3b444d1-4738-4ece-aee7-6c269b7c5e03)
+
+
+
 ---
 
 ## Задания со звёздочкой*
