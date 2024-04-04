@@ -87,7 +87,7 @@ netstat -tulpn | grep -E '8888|9999'
 ```
 vim /etc/haproxy/haproxy.cfg
 ```
-```
+```haproxy
 global
     # to have these messages end up in /var/log/haproxy.log you will
     # need to:
@@ -184,7 +184,7 @@ server s2 127.0.0.1:9999 check
 vim /etc/haproxy/haproxy.cfg
 ```
 
-```bash
+```haproxy
 global
     log         127.0.0.1 local2
 
